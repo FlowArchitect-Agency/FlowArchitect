@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowArchitect — Automated Systems for Service Businesses</title>
+<style>
+  :root{
+    --ink:#0B1220;
+    --blueprint:#12213F;
+    --blueprint-line:#2A3F63;
+    --paper:#EEF2F7;
+    --cyan:#7DD3FC;
+    --cyan-dim:#4A7A99;
+    --amber:#F2A93B;
+    --green:#7EE0A8;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  @font-face{font-family:'Space Grotesk';src:local('Space Grotesk');}
+  *{box-sizing:border-box; margin:0; padding:0; overflow-wrap:break-word;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--blueprint);
+    color:var(--paper);
+    font-family:var(--font-body);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+  a{color:inherit;}
+
+  /* blueprint grid background */
+  .grid-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--blueprint-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
+    background-size:40px 40px;
+    opacity:0.35;
+  }
+
+  header, main, footer{position:relative; z-index:1;}
+
+  /* NAV */
+  nav{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap;
+    row-gap:14px;
+    padding:28px 6vw;
+    font-family:var(--font-mono);
+  }
+  .wordmark{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:1.3rem;
+    letter-spacing:0.01em;
+    display:flex; align-items:center; gap:6px;
+  }
+  .wordmark .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--cyan);
+    box-shadow:0 0 8px var(--cyan);
+  }
+  .nav-right{ display:flex; align-items:center; gap:26px; }
+  .lang-toggle{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    letter-spacing:0.04em;
+  }
+  .lang-btn{
+    background:none; border:none; cursor:pointer;
+    color:var(--cyan-dim);
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    letter-spacing:0.04em;
+    padding:2px 4px;
+    transition:color 0.15s ease;
+  }
+  .lang-btn:hover{ color:var(--paper); }
+  .lang-btn.active{ color:var(--cyan); font-weight:700; }
+  .lang-sep{ color:var(--blueprint-line); }
+  .nav-cta{
+    font-family:var(--font-mono);
+    font-size:0.8rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    border:1px solid var(--cyan-dim);
+    padding:9px 18px;
+    border-radius:2px;
+    text-decoration:none;
+    transition:all 0.2s ease;
+    text-align:center;
+    max-width:100%;
+  }
+  .nav-cta:hover{ background:var(--cyan); color:var(--ink); border-color:var(--cyan); }
+
+  /* HERO */
+  .hero{
+    min-height:88vh;
+    display:grid;
+    grid-template-columns:1.1fr 1fr;
+    gap:40px;
+    align-items:center;
+    padding:20px 6vw 80px;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:22px;
+    display:flex; align-items:flex-start; gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:24px; height:1px;
+    background:var(--cyan);
+    display:inline-block;
+    margin-top:8px;
+    flex-shrink:0;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(2.1rem, 4.2vw, 3.4rem);
+    line-height:1.12;
+    letter-spacing:-0.01em;
+    color:#fff;
+  }
+  .hero p.sub{
+    margin-top:24px;
+    font-size:1.08rem;
+    color:#B9C6DA;
+    max-width:46ch;
+  }
+  .cta-row{ margin-top:38px; display:flex; gap:18px; flex-wrap:wrap; }
+  .btn-primary{
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    background:var(--amber);
+    color:var(--ink);
+    padding:16px 28px;
+    border-radius:2px;
+    text-decoration:none;
+    font-weight:700;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+    display:inline-block;
+  }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 8px 24px rgba(242,169,59,0.25); }
+  .btn-ghost{
+    font-family:var(--font-mono);
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--paper);
+    padding:16px 8px;
+    text-decoration:none;
+    border-bottom:1px solid var(--cyan-dim);
+  }
+
+  /* schematic diagram */
+  .schematic{ width:100%; height:auto; }
+  .schematic .node-box{
+    fill:rgba(125,211,252,0.05);
+    stroke:var(--cyan-dim);
+    stroke-width:1;
+  }
+  .schematic .node-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    fill:#B9C6DA;
+    letter-spacing:0.03em;
+  }
+  .schematic .flow-line{
+    fill:none;
+    stroke:var(--cyan);
+    stroke-width:1.5;
+    stroke-dasharray:400;
+    stroke-dashoffset:400;
+    animation:draw 2.2s ease forwards;
+  }
+  .schematic .pulse{
+    fill:var(--amber);
+    opacity:0;
+    animation:pulse 2.2s ease forwards;
+  }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+  @keyframes pulse{
+    0%,60%{ opacity:0; }
+    75%{ opacity:1; }
+    100%{ opacity:0.9; }
+  }
+
+  section{ padding:100px 6vw; }
+  .section-label{
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:18px;
+  }
+  h2{
+    font-family:var(--font-display);
+    font-size:clamp(1.6rem, 3vw, 2.3rem);
+    font-weight:700;
+    color:#fff;
+    max-width:26ch;
+    margin-bottom:20px;
+  }
+
+  /* PROBLEM */
+  .problem{ display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; }
+  .problem p{ color:#B9C6DA; font-size:1.05rem; max-width:52ch; }
+  .problem p + p{ margin-top:18px; }
+
+  /* CASE STUDIES */
+  .case-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:28px;
+    margin-top:50px;
+  }
+  .case-card{
+    border:1px solid var(--blueprint-line);
+    background:rgba(255,255,255,0.02);
+    padding:0;
+    border-radius:3px;
+    overflow:hidden;
+    transition:border-color 0.2s ease, transform 0.2s ease;
+  }
+  .case-card:hover{ border-color:var(--cyan-dim); transform:translateY(-4px); }
+
+  /* mock code snippet placeholders */
+  .case-shot{
+    aspect-ratio:16/10;
+    background:
+      repeating-linear-gradient(45deg, rgba(125,211,252,0.04) 0 2px, transparent 2px 14px),
+      var(--ink);
+    border-bottom:1px solid var(--blueprint-line);
+    display:flex; align-items:center; justify-content:center;
+    padding:22px;
+    position:relative;
+  }
+  .case-shot::before{
+    content:'●  ●  ●';
+    position:absolute;
+    top:12px; left:16px;
+    font-size:9px;
+    letter-spacing:3px;
+    color:var(--blueprint-line);
+  }
+  .code-mock{
+    font-family:var(--font-mono);
+    font-size:0.72rem;
+    line-height:1.7;
+    color:#8CA0BC;
+    white-space:pre-wrap;
+    word-break:break-word;
+    margin-top:6px;
+  }
+  .code-mock .c-kw{ color:var(--cyan); }
+  .code-mock .c-str{ color:var(--green); }
+  .code-mock .c-num{ color:var(--amber); }
+  .code-mock .c-op{ color:var(--paper); }
+  .code-mock .c-cm{ color:var(--blueprint-line); }
+
+  .case-body{ padding:24px; }
+  .case-tag{
+    font-family:var(--font-mono);
+    font-size:0.7rem;
+    color:var(--amber);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin-bottom:10px;
+  }
+
+  /* PROJECT VISUAL GALLERIES */
+  .visuals-intro{ margin-bottom:56px; }
+  .project-block{ margin-bottom:64px; }
+  .project-block:last-child{ margin-bottom:0; }
+  .project-block h3{
+    font-family:var(--font-display);
+    font-size:1.25rem;
+    font-weight:700;
+    color:#fff;
+    margin-bottom:22px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--blueprint-line);
+  }
+  .project-grid{ display:grid; gap:24px; }
+  .project-grid.grid-2{ grid-template-columns:repeat(2, 1fr); }
+  .project-grid.grid-3{ grid-template-columns:repeat(3, 1fr); }
+  .project-grid.grid-1{ grid-template-columns:1fr; }
+  .project-img-card{
+    border:1px solid var(--blueprint-line);
+    border-radius:3px;
+    overflow:hidden;
+    background:rgba(255,255,255,0.02);
+    transition:box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  }
+  .project-img-card:hover{
+    border-color:var(--cyan-dim);
+    box-shadow:0 14px 34px rgba(125,211,252,0.16);
+    transform:translateY(-3px);
+  }
+  .project-img-card img{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:16/10;
+    object-fit:cover;
+    background:var(--ink);
+  }
+  .project-img-card figcaption{
+    font-family:var(--font-mono);
+    font-size:0.74rem;
+    letter-spacing:0.03em;
+    color:#9FB0C6;
+    padding:12px 14px;
+    border-top:1px solid var(--blueprint-line);
+  }
+
+  .case-body h3{
+    font-family:var(--font-display);
+    font-size:1.05rem;
+    color:#fff;
+    margin-bottom:10px;
+    line-height:1.3;
+  }
+  .case-body p{ color:#9FB0C6; font-size:0.92rem; }
+
+  /* OFFER */
+  .offer{
+    text-align:center;
+    background:radial-gradient(ellipse at center, rgba(125,211,252,0.06), transparent 70%);
+    border-top:1px solid var(--blueprint-line);
+    border-bottom:1px solid var(--blueprint-line);
+  }
+  .offer h2{ margin:0 auto 20px; }
+  .offer p{ color:#B9C6DA; max-width:50ch; margin:0 auto 34px; }
+
+  footer{
+    padding:40px 6vw;
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    color:var(--cyan-dim);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+
+  @media (max-width:860px){
+    .hero{ grid-template-columns:1fr; padding-top:20px; }
+    .problem{ grid-template-columns:1fr; }
+    .case-grid{ grid-template-columns:1fr; }
+    .project-grid.grid-2, .project-grid.grid-3{ grid-template-columns:1fr; }
+    section{ padding:70px 6vw; }
+    .nav-right{ gap:14px; }
+  }
+
+  @media (max-width:480px){
+    nav{ padding:20px 5vw; }
+    .wordmark{ font-size:1.1rem; }
+    .nav-right{
+      width:100%;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .nav-cta{
+      font-size:0.7rem;
+      padding:8px 14px;
+      letter-spacing:0.04em;
+    }
+    .lang-toggle{ font-size:0.72rem; gap:6px; }
+    .cta-row{ flex-direction:column; align-items:stretch; gap:14px; }
+    .btn-primary, .btn-ghost{ text-align:center; width:100%; }
+    .btn-ghost{ border:1px solid var(--blueprint-line); border-radius:2px; padding:14px 8px; }
+    h1{ font-size:1.8rem; }
+    .case-shot{ padding:16px; }
+    .code-mock{ font-size:0.66rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<header>
+  <nav>
+    <div class="wordmark">FlowArchitect<span class="dot"></span></div>
+    <div class="nav-right">
+      <div class="lang-toggle" role="group" aria-label="Language toggle">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <span class="lang-sep">|</span>
+        <button class="lang-btn" data-lang="fr">FR</button>
+      </div>
+      <a class="nav-cta" href="#offer" data-i18n="nav_cta">Book Audit</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div>
+      <div class="eyebrow" data-i18n="eyebrow">Automated operating systems</div>
+      <h1 data-i18n="h1">We automate lead pipelines so you stop losing customers to manual admin.</h1>
+      <p class="sub" data-i18n="sub">FlowArchitect builds automated operating systems for high-growth service businesses — from first click to booked appointment, with nothing falling through the cracks.</p>
+      <div class="cta-row">
+        <a class="btn-primary" href="#offer" data-i18n="cta_book">Book a 15-Minute Systems Audit</a>
+        <a class="btn-ghost" href="#work" data-i18n="cta_work">See the work</a>
+      </div>
+    </div>
+    <div>
+      <svg class="schematic" viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg">
+        <rect class="node-box" x="10" y="30" width="110" height="50" rx="2"/>
+        <text class="node-label" x="20" y="58">LEAD FORM</text>
+
+        <rect class="node-box" x="10" y="135" width="110" height="50" rx="2"/>
+        <text class="node-label" x="20" y="163">CALENDAR</text>
+
+        <rect class="node-box" x="10" y="240" width="110" height="50" rx="2"/>
+        <text class="node-label" x="20" y="268">FOLLOW-UP</text>
+
+        <rect class="node-box" x="290" y="135" width="120" height="50" rx="2"/>
+        <text class="node-label" x="300" y="163">DASHBOARD</text>
+
+        <path class="flow-line" d="M120 55 L 200 55 L 200 160 L 290 160" style="animation-delay:0.1s"/>
+        <path class="flow-line" d="M120 160 L 200 160" style="animation-delay:0.5s"/>
+        <path class="flow-line" d="M120 265 L 200 265 L 200 160" style="animation-delay:0.9s"/>
+
+        <circle class="pulse" cx="200" cy="55" r="4" style="animation-delay:0.4s"/>
+        <circle class="pulse" cx="200" cy="160" r="4" style="animation-delay:1.1s"/>
+        <circle class="pulse" cx="200" cy="265" r="4" style="animation-delay:1.6s"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="problem">
+    <div>
+      <div class="section-label" data-i18n="problem_label">The Problem</div>
+      <h2 data-i18n="problem_h2">Your leads aren't lost. They're just sitting.</h2>
+    </div>
+    <div>
+      <p data-i18n="problem_p1">You're paying for ads, referrals, and a website that brings people in the door — and then the trail goes cold. A form gets submitted at 9pm and nobody follows up until Tuesday. A lead wants to book but has to wait for a callback.</p>
+      <p data-i18n="problem_p2">That's not a sales problem. That's a systems problem — and it's costing you real revenue every week.</p>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="section-label" data-i18n="cases_label">Case Studies</div>
+    <h2 data-i18n="cases_h2">Built for real businesses. Already running.</h2>
+    <div class="case-grid">
+
+      <div class="case-card">
+        <div class="case-shot">
+          <pre class="code-mock"><span class="c-cm">// lead_router.js</span>
+<span class="c-kw">if</span> (lead.<span class="c-op">value</span> <span class="c-op">></span> <span class="c-num">15000</span>) {
+  route <span class="c-op">→</span> <span class="c-str">"VIP_QUEUE"</span>
+  notify <span class="c-op">→</span> <span class="c-str">manager</span>
+} <span class="c-kw">else</span> {
+  route <span class="c-op">→</span> <span class="c-str">"STANDARD_QUEUE"</span>
+}</pre>
+        </div>
+        <div class="case-body">
+          <div class="case-tag" data-i18n="case1_tag">Lead Qualification Engine</div>
+          <h3 data-i18n="case1_title">Élite Rénovation Paris — VIP Quote Dashboard</h3>
+          <p data-i18n="case1_body">A conditional logic engine parses every inbound web lead the moment it arrives, automatically separating high-ticket VIP projects (over €15,000) from standard requests, and pushing the results straight into the manager's CRM dashboard — no manual sorting required.</p>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-shot">
+          <pre class="code-mock"><span class="c-cm">// dispatch_webhook.log</span>
+<span class="c-kw">POST</span> /webhook/booking <span class="c-num">200</span> OK
+payload.received <span class="c-op">✓</span>
+sync <span class="c-op">→</span> <span class="c-str">ops_dashboard</span>
+manual_entry <span class="c-op">→</span> <span class="c-str">none</span></pre>
+        </div>
+        <div class="case-body">
+          <div class="case-tag" data-i18n="case2_tag">Live Dispatch Infrastructure</div>
+          <h3 data-i18n="case2_title">Maid 2 Clean SD — Real-Time Dispatch Backend</h3>
+          <p data-i18n="case2_body">A live webhook infrastructure catches every external booking payload the instant it's submitted and populates a synchronized operations command center in real time — eliminating manual data entry entirely.</p>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-shot">
+          <pre class="code-mock"><span class="c-cm"># etl_pipeline.py</span>
+<span class="c-kw">on</span>: github.actions.schedule
+  <span class="c-op">→</span> extract(job_market_data)
+  <span class="c-op">→</span> transform(pandas)
+  <span class="c-op">→</span> load <span class="c-op">→</span> <span class="c-str">"streamlit_app"</span></pre>
+        </div>
+        <div class="case-body">
+          <div class="case-tag" data-i18n="case3_tag">Automated ETL Pipeline</div>
+          <h3 data-i18n="case3_title">Corporate Market Intel — Automated ETL Pipeline</h3>
+          <p data-i18n="case3_body">A custom Python pipeline, triggered on a schedule by GitHub Actions, automatically extracts job market data, transforms it, and loads it into a live Streamlit web application — giving the team an always-current view for competitor analysis.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="visuals">
+    <div class="section-label" data-i18n="visuals_label">Portfolio in Detail</div>
+    <h2 class="visuals-intro" data-i18n="visuals_h2">A closer look inside each system.</h2>
+
+    <div class="project-block">
+      <h3 data-i18n="case1_title">Élite Rénovation Paris — Dashboard de Devis VIP</h3>
+      <div class="project-grid grid-2">
+        <figure class="project-img-card">
+          <img src="images/renov_n8n.png" alt="n8n Automation Flow">
+          <figcaption data-i18n="renov_n8n_caption">n8n Automation Flow</figcaption>
+        </figure>
+        <figure class="project-img-card">
+          <img src="images/renov_dashboard.png" alt="CRM Quote Dashboard">
+          <figcaption data-i18n="renov_dashboard_caption">CRM Quote Dashboard</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="project-block">
+      <h3 data-i18n="case2_title">Maid 2 Clean SD — Real-Time Dispatch Backend</h3>
+      <div class="project-grid grid-3">
+        <figure class="project-img-card">
+          <img src="images/maid_dashboard.png" alt="Airtable Command Center">
+          <figcaption data-i18n="maid_dashboard_caption">Airtable Command Center</figcaption>
+        </figure>
+        <figure class="project-img-card">
+          <img src="images/maid_chart.png" alt="Live Booking Analytics">
+          <figcaption data-i18n="maid_chart_caption">Live Booking Analytics</figcaption>
+        </figure>
+        <figure class="project-img-card">
+          <img src="images/maid_revenue.png" alt="Revenue Tracking">
+          <figcaption data-i18n="maid_revenue_caption">Revenue Tracking</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="project-block">
+      <h3 data-i18n="case3_title">Corporate Market Intel — Automated ETL Pipeline</h3>
+      <div class="project-grid grid-1">
+        <figure class="project-img-card">
+          <img src="images/etl_dashboard.png" alt="Streamlit ETL Dashboard">
+          <figcaption data-i18n="etl_dashboard_caption">Streamlit ETL Dashboard</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="offer" id="offer">
+    <div class="section-label" data-i18n="offer_label">The Offer</div>
+    <h2 data-i18n="offer_h2">See exactly where you're losing leads.</h2>
+    <p data-i18n="offer_p">In 15 minutes, we'll map your current lead flow — from ad click to closed customer — and show you precisely where the gaps are, and what it would take to close them.</p>
+    <a class="btn-primary" href="https://calendly.com/contact-mehdiai/30min" target="_blank" rel="noopener" id="booking-link" data-i18n="cta_book">Book a 15-Minute Systems Audit</a>
+  </section>
+</main>
+
+<footer>
+  <div>FlowArchitect © 2026</div>
+  <div>hello@flowarchitect.co</div>
+</footer>
+
+<script>
+  const translations = {
+    en: {
+      nav_cta: "Book Audit",
+      eyebrow: "Automated operating systems",
+      h1: "We automate lead pipelines so you stop losing customers to manual admin.",
+      sub: "FlowArchitect builds automated operating systems for high-growth service businesses — from first click to booked appointment, with nothing falling through the cracks.",
+      cta_book: "Book a 15-Minute Systems Audit",
+      cta_work: "See the work",
+      problem_label: "The Problem",
+      problem_h2: "Your leads aren't lost. They're just sitting.",
+      problem_p1: "You're paying for ads, referrals, and a website that brings people in the door — and then the trail goes cold. A form gets submitted at 9pm and nobody follows up until Tuesday. A lead wants to book but has to wait for a callback.",
+      problem_p2: "That's not a sales problem. That's a systems problem — and it's costing you real revenue every week.",
+      cases_label: "Case Studies",
+      cases_h2: "Built for real businesses. Already running.",
+      case1_tag: "Lead Qualification Engine",
+      case1_title: "Élite Rénovation Paris — VIP Quote Dashboard",
+      case1_body: "A conditional logic engine built in n8n parses every inbound web lead the moment it arrives, automatically separating high-ticket VIP projects (over €15,000) from standard requests, and pushing the results straight into the manager's CRM dashboard — no manual sorting required.",
+      case2_tag: "Live Dispatch Infrastructure",
+      case2_title: "Maid 2 Clean SD — Real-Time Dispatch Backend",
+      case2_body: "A live webhook infrastructure catches every external booking payload the instant it's submitted and populates a synchronized operations command center in Airtable in real time — eliminating manual data entry entirely.",
+      case3_tag: "Automated ETL Pipeline",
+      case3_title: "Corporate Market Intel — Automated ETL Pipeline",
+      case3_body: "A custom Python pipeline, triggered on a schedule by GitHub Actions, automatically extracts job market data, transforms it, and loads it into a live Streamlit web application — giving the team an always-current view for competitor analysis.",
+      offer_label: "The Offer",
+      offer_h2: "See exactly where you're losing leads.",
+      offer_p: "In 15 minutes, we'll map your current lead flow — from ad click to closed customer — and show you precisely where the gaps are, and what it would take to close them.",
+      visuals_label: "Portfolio in Detail",
+      visuals_h2: "A closer look inside each system.",
+      renov_n8n_caption: "n8n Automation Flow",
+      renov_dashboard_caption: "CRM Quote Dashboard",
+      maid_dashboard_caption: "Airtable Command Center",
+      maid_chart_caption: "Live Booking Analytics",
+      maid_revenue_caption: "Revenue Tracking",
+      etl_dashboard_caption: "Streamlit ETL Dashboard"
+    },
+    fr: {
+      nav_cta: "Réserver un Audit",
+      eyebrow: "Systèmes d'exploitation automatisés",
+      h1: "Nous automatisons vos pipelines de leads pour que vous arrêtiez de perdre des clients à cause de tâches administratives manuelles.",
+      sub: "FlowArchitect conçoit des systèmes d'exploitation automatisés pour les entreprises de services en forte croissance — du premier clic jusqu'au rendez-vous confirmé, sans qu'aucune opportunité ne passe à travers les mailles du filet.",
+      cta_book: "Réserver un Audit Système de 15 Minutes",
+      cta_work: "Voir nos réalisations",
+      problem_label: "Le Problème",
+      problem_h2: "Vos leads ne sont pas perdus. Ils attendent, simplement.",
+      problem_p1: "Vous payez pour des publicités, des recommandations et un site web qui attire des visiteurs — puis la piste se refroidit. Un formulaire est soumis à 21h et personne ne relance avant mardi. Un lead veut réserver mais doit attendre un rappel.",
+      problem_p2: "Ce n'est pas un problème commercial. C'est un problème de système — et cela vous coûte un vrai chiffre d'affaires chaque semaine.",
+      cases_label: "Études de Cas",
+      cases_h2: "Conçu pour de vraies entreprises. Déjà opérationnel.",
+      case1_tag: "Moteur de Qualification des Leads",
+      case1_title: "Élite Rénovation Paris — Dashboard de Devis VIP",
+      case1_body: "Un moteur à logique conditionnelle construit dans n8n analyse chaque lead entrant dès son arrivée, sépare automatiquement les projets VIP à forte valeur (plus de 15 000 €) des demandes standards, et met à jour instantanément le dashboard CRM du gérant — sans tri manuel.",
+      case2_tag: "Infrastructure de Dispatch en Temps Réel",
+      case2_title: "Maid 2 Clean SD — Backend de Dispatch en Temps Réel",
+      case2_body: "Une infrastructure de webhooks en direct capte chaque réservation externe dès sa soumission et alimente un centre de commande opérationnel synchronisé dans Airtable en temps réel — éliminant totalement la saisie manuelle.",
+      case3_tag: "Pipeline ETL Automatisé",
+      case3_title: "Corporate Market Intel — Pipeline ETL Automatisé",
+      case3_body: "Un pipeline Python sur mesure, déclenché selon un calendrier par GitHub Actions, extrait automatiquement les données du marché de l'emploi, les transforme, puis les charge dans une application web Streamlit en direct — offrant à l'équipe une vue toujours à jour pour l'analyse concurrentielle.",
+      offer_label: "L'Offre",
+      offer_h2: "Identifiez précisément où vous perdez vos leads.",
+      offer_p: "En 15 minutes, nous cartographions votre flux de leads actuel — du clic publicitaire jusqu'au client signé — et vous montrons précisément où se situent les failles, et ce qu'il faudrait pour les combler.",
+      visuals_label: "Portfolio en Détail",
+      visuals_h2: "Un aperçu détaillé de chaque système.",
+      renov_n8n_caption: "Flux d'automatisation n8n",
+      renov_dashboard_caption: "Dashboard CRM de Devis",
+      maid_dashboard_caption: "Centre de Commande Airtable",
+      maid_chart_caption: "Analytique des Réservations en Direct",
+      maid_revenue_caption: "Suivi du Chiffre d'Affaires",
+      etl_dashboard_caption: "Dashboard ETL Streamlit"
+    }
+  };
+
+  function setLang(lang){
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var key = el.getAttribute('data-i18n');
+      if (translations[lang] && translations[lang][key] !== undefined) {
+        el.textContent = translations[lang][key];
+      }
+    });
+    document.querySelectorAll('.lang-btn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+  }
+
+  document.querySelectorAll('.lang-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      setLang(btn.getAttribute('data-lang'));
+    });
+  });
+</script>
+
+</body>
+</html>
