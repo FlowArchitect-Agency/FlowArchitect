@@ -299,7 +299,8 @@
   .project-grid{ display:grid; gap:24px; }
   .project-grid.grid-2{ grid-template-columns:repeat(2, 1fr); }
   .project-grid.grid-3{ grid-template-columns:repeat(3, 1fr); }
-  .project-grid.grid-1{ grid-template-columns:1fr; }
+  .project-grid.grid-1{ grid-template-columns:1fr; justify-items:center; }
+  .project-grid.grid-1 .project-img-card{ max-width:560px; width:100%; }
   .project-img-card{
     border:1px solid var(--blueprint-line);
     border-radius:3px;
